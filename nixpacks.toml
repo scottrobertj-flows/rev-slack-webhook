@@ -1,0 +1,5 @@
+[phases.build]
+cmds = ["npm install"]
+
+[phases.start]
+cmds = ["node server.js"]
