@@ -5,7 +5,8 @@
  * and posts rich Slack notifications when something changes.
  *
  * Environment variables (set in Railway → Variables):
- *   REV_API_KEY        — Your Rev V1 API user key
+ *   REV_CLIENT_KEY     — Your Rev Client API key
+ *   REV_USER_KEY       — Your Rev User API key
  *   SLACK_WEBHOOK_URL  — Slack Incoming Webhook URL
  *   SLACK_CHANNEL      — e.g. #transcriptions
  *   POLL_INTERVAL_MS   — optional, defaults to 900000 (15 min)
@@ -17,13 +18,16 @@ const http  = require("http");
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
-const REV_API_KEY   = process.env.REV_API_KEY;
+const REV_CLIENT_KEY = process.env.REV_CLIENT_KEY;
+const REV_USER_KEY   = process.env.REV_USER_KEY;
+const REV_AUTH       = `Rev ${process.env.REV_CLIENT_KEY}:${process.env.REV_USER_KEY}`;
 const SLACK_WEBHOOK = process.env.SLACK_WEBHOOK_URL;
 const SLACK_CHANNEL = process.env.SLACK_CHANNEL    || "#transcriptions";
 const POLL_INTERVAL = parseInt(process.env.POLL_INTERVAL_MS) || 15 * 60 * 1000;
 const PORT          = process.env.PORT || 3000;
 
-if (!REV_API_KEY)   { console.error("❌  REV_API_KEY is required");       process.exit(1); }
+if (!REV_CLIENT_KEY) { console.error("❌  REV_CLIENT_KEY is required"); process.exit(1); }
+if (!REV_USER_KEY)   { console.error("❌  REV_USER_KEY is required");   process.exit(1); }
 if (!SLACK_WEBHOOK) { console.error("❌  SLACK_WEBHOOK_URL is required"); process.exit(1); }
 
 // ─── State ────────────────────────────────────────────────────────────────────
@@ -58,7 +62,7 @@ async function fetchRevOrders() {
     path:     "/api/v1/orders?page_size=50",
     method:   "GET",
     headers: {
-      "Authorization": `Rev ${REV_API_KEY}`,
+      "Authorization": REV_AUTH,
       "Content-Type":  "application/json",
     },
   });
